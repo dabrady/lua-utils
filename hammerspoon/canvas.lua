@@ -4,7 +4,7 @@ module = module or require('hs.canvas')
 assert(type(module) == 'table', 'must provide a table to extend')
 
 require('hs.timer')
-requrie('hs.fnutils')
+require('hs.fnutils')
 
 ---- Rolling my own 'show and hide with fade-out': need to be able to cancel the animation.
 module.flashable = {}
