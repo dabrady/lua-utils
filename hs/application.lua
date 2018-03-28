@@ -1,5 +1,6 @@
 -- Provide the ability to encapsulate the extensions into a different table.
-local module = ... or require('hs.application')
+local _,_,module = ...
+module = module  or require('hs.application')
 assert(type(module) == 'table', 'must provide a table to extend')
 
 require('hs.applescript')

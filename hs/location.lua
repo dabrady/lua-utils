@@ -1,5 +1,6 @@
 -- Provide the ability to encapsulate the extensions into a different table.
-local module = ... or require('hs.location')
+local _,_,module = ...
+module = module or require('hs.location')
 assert(type(module) == 'table', 'must provide a table to extend')
 if not module.geocoder then module.geocoder = {} end
 

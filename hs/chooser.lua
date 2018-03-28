@@ -1,5 +1,6 @@
 -- Provide the ability to encapsulate the extensions into a different table.
-local module = ... or require('hs.chooser')
+local _,_,module = ...
+module = module or require('hs.chooser')
 assert(type(module) == 'table', 'must provide a table to extend')
 
 -- Takes a list of strings and creates a choice table formatted such that

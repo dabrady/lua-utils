@@ -1,8 +1,9 @@
 -- Provide the ability to encapsulate the extensions into a different table.
-local module = ... or require('hs.fs')
+local _,_,module = ...
+module = module or require('hs.fs')
 assert(type(module) == 'table', 'must provide a table to extend')
 
-require '../string'
+require('lua-utils/string')
 
 -- Returns a list of directories in the given path.
 function module.dirs(path)
