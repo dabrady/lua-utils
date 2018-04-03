@@ -1,3 +1,8 @@
+--[[
+TODO
+- update type checking to use `assert` instead of returning nil
+]]
+
 -- Provide the ability to encapsulate the extensions into a different table.
 local _,_,module = ...
 module = module or table
@@ -63,6 +68,12 @@ function module.values(t)
     table.insert(values, v)
   end
   return values
+end
+
+function module.isEmpty(t)
+  if type(t) ~= 'table' then return nil end
+  -- If there are any pairs to iterate over, the table isn't empty.
+  return next(t) == nil
 end
 
 -- Executes, across a table, a function that transforms each key-value pair into a new key-value pair, and
