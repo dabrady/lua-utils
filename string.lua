@@ -21,5 +21,12 @@ function module.trim(str)
   return str:match'^()%s*$' and '' or str:match'^%s*(.*%S)'
 end
 
+-- Given a string, one presumably composed of a sequence of tokens joined by underscores,
+-- returns the given string with the underscores replaced by a single space, along with the number of
+-- underscores replaced.
+function module.unchain(str)
+  return str:gsub('_', ' ')
+end
+
 -----------
 return module
