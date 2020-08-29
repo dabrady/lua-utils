@@ -24,6 +24,11 @@ do
 end
 
 -- Provide less magical type assertion.
+-- TODO(dabrady) Evaluate LuaMacro as possible alternative.
+-- This current approach results in misleading function name in failed assertion
+-- error messages: it always reports `assert_type` as the source of type errors.
+-- @see https://github.com/stevedonovan/LuaMacro
+-- @see https://luarocks.org/modules/steved/luamacro
 function module.assert_type(val, t)
   module.__checks__(t) -- Asserts against the first argument to `assert_type`
   return val
