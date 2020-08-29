@@ -191,9 +191,29 @@ end
 -- Turns a table inside by creating a new table whose keys are the values
 -- of the original table, and whose values are the corresponding keys of
 -- the original.
-function module.inverse(t)
+function module.inverse(t, gather_collisions)
   local _t = {}
-  for k,v in pairs(t) do _t[v] = k end
+  local collisions = {}
+
+  for k,v in pairs(t) do
+    if gather_collisions and _t[v] then
+      if collisions[v] then
+        table.insert(collisions[v], k)
+      else
+        collisions[v] = {k}
+      end
+    else
+      _t[v] = k
+    end
+  end
+
+  if gather_collisions then
+    for k,vs in pairs(collisions) do
+      table.insert(vs, _t[k])
+      _t[k] = vs
+    end
+  end
+
   return _t
 end
 
