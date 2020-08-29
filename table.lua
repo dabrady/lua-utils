@@ -188,5 +188,14 @@ function module.merge(t1, t2)
   return t1
 end
 
+-- Turns a table inside by creating a new table whose keys are the values
+-- of the original table, and whose values are the corresponding keys of
+-- the original.
+function module.inverse(t)
+  local _t = {}
+  for k,v in pairs(t) do _t[v] = k end
+  return _t
+end
+
 -----------
 return module
