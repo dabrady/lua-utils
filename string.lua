@@ -28,5 +28,11 @@ function module.unchain(str)
   return str:gsub('_', ' ')
 end
 
+-- Given a string, return a version with the given suffix removed.
+function module.chop(str, suffix_query)
+  local s = str:gsub(suffix_query..'$', '', 1)
+  return s
+end
+
 -----------
 return module
