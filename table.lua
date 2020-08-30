@@ -230,5 +230,17 @@ function module.uniq(t)
   return _t
 end
 
+-- Returns a subset of the given table consisting of entries matching the given list of keys.
+function module.slice(t, keys)
+  if not keys then
+    return
+  end
+
+  local _t = {}
+  for _,v in ipairs(keys) do _t[v] = t[v] end
+
+  return _t
+end
+
 -----------
 return module
