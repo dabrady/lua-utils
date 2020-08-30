@@ -34,5 +34,14 @@ function module.chop(str, suffix_query)
   return s
 end
 
+-- Simple splitter function: divides a string into chunks based on the given delimeter.
+function module.split(str, delim)
+  local chunks = {}
+  for chunk in str:gmatch('[^'..delim..']*') do
+    table.insert(chunks, chunk)
+  end
+  return chunks
+end
+
 -----------
 return module
