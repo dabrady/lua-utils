@@ -26,20 +26,25 @@ function module.dirs(path)
 end
 
 -- Load each file in a given directory with the given extension, with any arguments given.
-function module.loadAllFiles(rootDir, ext, ...)
+function module.loadAllFiles(rootDir, ext, prefix, ...)
   -- Make sure our root ends with a directory marker.
   rootDir = rootDir:endsWith('/') and rootDir or rootDir..'/'
+  prefix = prefix or ''
 
   local loadedScripts = {}
   local _,scripts = hs.fs.dir(rootDir)
   repeat
     local filename = scripts:next()
     if filename and filename ~= '.' and filename ~= '..' and filename:endsWith(ext) then
-      print('\t\tloading script: '..filename)
+      print('\t\tloading script: '..prefix..filename)
       -- Load the script, passing the given arguments as parameters to the Lua chunk.
       -- Using `assert(loadfile(...))` instead of `require` to be compatible with Spoons.
       local script = assert(loadfile(rootDir..filename))(...)
       local basename = filename:match("^(.+)%.") -- Matches everything up to the first '.'
+
+      -- Cache it like `require` does
+      package.loaded[prefix..basename] = script
+
       loadedScripts[basename] = script
     end
   until filename == nil
