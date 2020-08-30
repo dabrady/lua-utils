@@ -217,5 +217,18 @@ function module.inverse(t, gather_collisions)
   return _t
 end
 
+-- Returns a deduped version of `t`.
+function module.uniq(t)
+  local _t = {}
+  local seen = {}
+  for _,v in ipairs(t) do
+    if not seen[v] then
+      seen[v] = true
+      table.insert(_t, v)
+    end
+  end
+  return _t
+end
+
 -----------
 return module
