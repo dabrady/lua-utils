@@ -394,5 +394,32 @@ function module.isList(t, empty_tables_are_lists)
   -- Congratulations, you've won!
   return true
 end
+
+-- Returns the indices of the given object in the given table-or-list.
+function module.locate(t, obj)
+  -- Empty tables contain nothing, not even nil.
+  if module.isEmpty(t) then
+    return {}
+  end
+
+  -- Check if the given object is in the set of values in our source table
+  -- local val_index = module.inverse(t, false) -- Don't reconcile collisions, we only care about presence, not value.
+  local val_index = module.inverse(t, true)
+
+  local indices = val_index[obj]
+  -- NOTE(dabrady) This is my attempt at always returning a list of indices.
+  -- However, it is flawed, in that it will be confused if the target object is _actually_ indexed by a table.
+  -- TODO(dabrady) Is there an improvement that can be made to `inverse` that allows me to tell the difference?
+  if type(indices) == 'table' then
+    return indices
+  else
+    return {indices}
+  end
+end
+
+-- Returns true if the given table-or-list contains the given object in its index.
+function module.contains(t, obj)
+  return not module.isEmpty(module.locate(t, obj))
+end
 -----------
 return module
