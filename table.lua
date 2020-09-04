@@ -421,5 +421,39 @@ end
 function module.contains(t, obj)
   return not module.isEmpty(module.locate(t, obj))
 end
+
+-- Flushes all occurrences of the given values from the source table.
+function module.flush(source, values, deep)
+  -- Clone the source table to avoid a mutation
+  local result
+  if deep then
+    result = module.deepCopy(source)
+  else
+    result = module.copy(source)
+  end
+
+  -- NOTE(dabrady) Using a value index directly instead of `module.contains` for loop efficiency
+  local val_index = module.inverse(result)
+
+  -- Remove the target items from our copy of the source table
+  for i = #values, 1, -1 do
+    if val_index[values[i]] then
+      local locations = module.locate(result, values[i])
+
+      for _,i in ipairs(locations) do
+        -- NOTE(dabrady) Trying `table.remove` first, so as to avoid creating a 'sparse' list
+        -- in the case where the source table is a list.
+        -- If it fails, it is because the source table is not a 'proper' list, and will throw an error;
+        -- in that case, we are free to simply remove the entry from the table Lua-style.
+        if not pcall(table.remove, result, i) then
+          result[i] = nil
+        end
+      end
+    end
+  end
+
+  return result
+end
+
 -----------
 return module
