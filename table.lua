@@ -286,5 +286,113 @@ function module.orderedPairs(t, state)
   return orderedNext, t, nil
 end
 
+--[[
+  A "list" is a dense (i.e. non-sparse) table with sequential, numerical keys, and a "length" valued at the highest key.
+  NOTE: Because a list is a very specific kind of table, the cost of this judgment increases with the size of the table.
+  Be wary of using this in situations where performance is critical and the table size can be quite large.
+
+  A table with no entries is ambiguous, and you can decide what it is. This algorithm defaults
+  to "not a list".
+
+  These are NOT lists by default (you can change this):
+      {}
+      { [1] = nil } (NOTE: Lua says keys with nil values don't count, and therefore this is equivalent to '{}')
+
+  These are NOT lists:
+      2
+      2.0
+      'boo'
+      false
+      { [1] = 'a', b = 'c' }
+      { b = 'a', [2] = 'c' }
+      { a = 1, b = 2 }
+      { 1, nil, 3 } (NOTE: Lua says keys with nil values don't count as entries, and this shorthand notation is
+                     equivalent to { [1]=1, [2]=nil, [3]=1 }, which creates a sparse table equivalent
+                     { [1]=1, [3]=3 } and is thus not a list)
+
+  These are lists:
+      { [1] = 'a', [2] = 'b' }
+      { [2] = 'b', [1] = 'a' } (NOTE: It doesn't matter in what order entries are added to the table.)
+      { 'a', 'b' }
+      { 6, 2 }
+      { {} }
+]]
+function module.isList(t, empty_tables_are_lists)
+  -- NOTE(dabrady) Useful for explaining the results.
+  local function log(...)
+    -- print('[DEBUG]', ...)
+  end
+  do
+    local empty = module.isEmpty(t)
+    if empty == nil then
+      -- `module.isEmpty` returns nil when its argument is not a table at all.
+      log't is not a table'
+      return false
+    end
+
+    -- NOTE(dabrady)
+    -- A table with no entries is ambiguous, and you can decide what it is.
+    -- This algorithm defaults to "not a list".
+    if empty then
+      -- This defaults to nil, and thus is falsey unless specified.
+      if empty_tables_are_lists then
+        return true
+      else
+        log't is empty and empty tables are not lists'
+        return false
+      end
+    end
+  end
+
+  do
+    local keys = module.keys(t)
+    -- `module.keys` returns a proper list, so if its length is not the same as the length of the table,
+    -- this cannot be a list.
+    if #keys ~= #t then
+      log't length different from number of keys'
+      return false
+    end
+
+    -- `table.sort` leverages the < comparator; it's possible to implement this on an object's metatable,
+    -- but regardless, if the keys can't be sorted, we know the table cannot possibly be composed of a
+    -- numerical sequence of key-value pairs, and thus is not a list.
+    if not pcall(table.sort, keys) then
+      log't keys unsortable'
+      return false
+    end
+    -- NOTE(dabrady): I really wish `table.sort` didn't sort in-place. Remind me to re-implement it.
+    -- Aliasing here is purely for readability.
+    local sortedKeys = keys
+
+    -- If the key with the largest value in a non-empty table is not equal to the 'length' of the table,
+    -- then the length operator is inaccurate and therefore the table cannot be a list.
+    if sortedKeys[#sortedKeys] ~= #t then
+      log't length is inaccurate'
+      return false
+    end
+
+    -- In a sequential iteration over a sorted numeric set, the value in the set corresponding to the
+    -- iteration index will equal the iteration index for all indices IFF the sorted numeric set is sequential
+    for i=1, #sortedKeys do
+      local key = sortedKeys[i]
+
+      -- This type-check covers custom implementations the `__lt` metatable event, which makes non-numbers
+      -- compatible with `table.sort`, and wouldn't have been caught by our use of `pcall` earlier.
+      -- if type(key) ~= 'number' then
+      --   return false
+      -- end
+
+      -- If our iteration sequence does not match the sorted key sequence, the key sequence has gaps and
+      -- therefore the original table cannot be a list.
+      if i ~= key then
+        log't is sparse'
+        return false
+      end
+    end
+  end
+
+  -- Congratulations, you've won!
+  return true
+end
 -----------
 return module
