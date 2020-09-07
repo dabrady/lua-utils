@@ -9,12 +9,22 @@ module = module or table
 assert(type(module) == 'table', 'must provide a table to extend')
 
 -- Handy table formatting function. Supports arbitrary depth.
-function module.format(t, depth, startingIndentLvl)
+function module.format(t, options)
   -- Delegate to builtin 'tostring' for non-tabular values.
   if type(t) ~= 'table' then return tostring(t) end
 
-  depth = depth or 1
-  startingIndentLvl = startingIndentLvl or 0
+  local defaults = {
+    -- How deep do we follow this rabbit hole?
+    depth = 1,
+    -- Set the indentation level (i.e. number of tab characters) of the first format level.
+    startingIndentLvl = 0
+  }
+  if options then
+    assert( type(options) == 'table', "format options must be a table" )
+    options = table.merge(defaults, options)
+  else
+    options = defaults
+  end
 
   local function tabs(n)
     local tabs = ''
@@ -28,11 +38,11 @@ function module.format(t, depth, startingIndentLvl)
     return s:gsub('\n$', '')
   end
 
-  -- Support explicit definitions of 'tostring' for tabular values.
-  local function getCustomToString(v, curIndentLvl)
+  -- Support custom `tostring` methods that accept options.
+  local function toIndentedString(v, curIndentLvl)
     local meta = getmetatable(v)
     if meta and meta.__tostring then
-      return meta.__tostring(v, curIndentLvl)
+      return meta.__tostring(v, { indent = curIndentLvl })
     else
       return nil
     end
@@ -48,14 +58,14 @@ function module.format(t, depth, startingIndentLvl)
       local vstring = nil
 
       if type(v) == 'table' and depth > 1 then
-        local formattedTable = getCustomToString(v, curIndentLvl)
+        local formattedTable = toIndentedString(v, curIndentLvl)
         if formattedTable then
           vstring = string.format(' = %s', formattedTable)
         else
           vstring = string.format(' = table{%s%s}', walk(v, curIndentLvl + 1, depth - 1), indent)
         end
       else
-        local formattedTable = type(v) == 'table' and getCustomToString(v, curIndentLvl)
+        local formattedTable = type(v) == 'table' and toIndentedString(v, curIndentLvl)
         vstring = string.format(' = %s', formattedTable or trimTrailingNewline(tostring(v)))
       end
 
@@ -65,8 +75,8 @@ function module.format(t, depth, startingIndentLvl)
     return tstring
   end
 
-  local startIndent = tabs(startingIndentLvl)
-  return string.format('%s{%s%s}', startIndent, walk(t, startingIndentLvl + 1, depth), startIndent)
+  local startIndent = tabs(options.startingIndentLvl)
+  return string.format('%s{%s%s}', startIndent, walk(t, options.startingIndentLvl + 1, options.depth), startIndent)
 end
 
 -- Returns a list of the keys of the given table.
