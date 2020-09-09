@@ -17,7 +17,9 @@ function module.format(t, options)
     -- How deep do we follow this rabbit hole?
     depth = 1,
     -- Set the indentation level (i.e. number of tab characters) of the first format level.
-    startingIndentLvl = 0
+    startingIndentLvl = 0,
+    -- A prefix to mark tabular values
+    tablePrefix = 'table'
   }
   if options then
     assert( type(options) == 'table', "format options must be a table" )
@@ -62,7 +64,7 @@ function module.format(t, options)
         if formattedTable then
           vstring = string.format(' = %s', formattedTable)
         else
-          vstring = string.format(' = table{%s%s}', walk(v, curIndentLvl + 1, depth - 1), indent)
+          vstring = string.format(' = %s{%s%s}', options.tablePrefix, walk(v, curIndentLvl + 1, depth - 1), indent)
         end
       else
         local formattedTable = type(v) == 'table' and toIndentedString(v, curIndentLvl)
