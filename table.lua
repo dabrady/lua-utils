@@ -429,6 +429,31 @@ function module.locate(t, obj)
   end
 end
 
+function module.locate_similar(t, obj)
+  -- Empty tables contain nothing, not even nil.
+  if module.isEmpty(t) then
+    return {}
+  end
+
+  local obj_type = type(obj)
+  local indices = {}
+  for k,v in pairs(t) do
+    local v_type = type(v)
+    -- Can't be similar if they're not the same type
+    if v_type ~= obj_type then
+      goto continue
+    end
+
+    if (v == obj) or (v_type == "table" and module.basically_the_same(v, obj)) then
+      indices[#indices + 1] = k
+    end
+
+    ::continue::
+  end
+
+  return indices
+end
+
 -- Returns true if the given table-or-list contains the given object in its index.
 function module.contains(t, obj)
   return not module.isEmpty(module.locate(t, obj))
@@ -465,6 +490,34 @@ function module.flush(source, values, deep)
   end
 
   return result
+end
+
+-- Checks two tables for one level of sameness: are all the keys the same, and are all the
+-- corresponding values the same?
+function module.basically_the_same(t1, t2)
+  assert(type(t1) == "table" and type(t2) == "table")
+
+  -- NOTE(dabrady) If the two tables are lists and have the same length,
+  -- we could short-circuit one of these loops. But determining whether
+  -- they are lists is more expensive than just doing the two loops here.
+
+  -- If any value of t2 is not in the values of t1, they're different.
+  for k1,v1 in pairs(t1) do
+    local v2 = t2[k1]
+    if v2 == nil or v1 ~= v2 then
+      return false
+    end
+  end
+
+  -- If any value of t1 is not in the values of t2, they're different.
+  for k2,v2 in pairs(t2) do
+    local v1 = t1[k2]
+    if v1 == nil or v1 ~= v2 then
+      return false
+    end
+  end
+
+  return true
 end
 
 -----------
