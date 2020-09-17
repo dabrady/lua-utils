@@ -262,7 +262,7 @@ function module.orderedPairs(t, state)
   local function __genOrderedIndex( t )
     local orderedIndex = {}
     for key in next,t do
-      table.insert( orderedIndex, key )
+      orderedIndex[#orderedIndex + 1] = key
     end
     table.sort( orderedIndex )
     return orderedIndex
@@ -272,26 +272,23 @@ function module.orderedPairs(t, state)
   -- order. We use a temporary ordered key table that is stored in the
   -- table being iterated.
   function orderedNext(t, state)
-    local key = nil
     if state == nil then
-      -- the first time, generate the index
+      -- The first time, generate the index and set our initial cursor
       t.__orderedIndex = __genOrderedIndex( t )
-      key = t.__orderedIndex[1]
+      t.__iterationPosition = 1
     else
-      -- fetch the next value
-      for i = 1,#t.__orderedIndex do
-        if t.__orderedIndex[i] == state then
-          key = t.__orderedIndex[i+1]
-        end
-      end
+      -- Move the cursor
+      t.__iterationPosition = t.__iterationPosition + 1
     end
 
+    local key = t.__orderedIndex[t.__iterationPosition]
     if key then
       return key, t[key]
     end
 
-    -- no more value to return, cleanup
+    -- No more entries, cleanup our iterator state
     t.__orderedIndex = nil
+    t.__iterationPosition = nil
     return
   end
 
