@@ -494,6 +494,11 @@ end
 function module.basically_the_same(t1, t2)
   assert(type(t1) == "table" and type(t2) == "table")
 
+  if t1 == t2 then
+    -- They're actually the same.
+    return true
+  end
+
   -- NOTE(dabrady) If the two tables are lists and have the same length,
   -- we could short-circuit one of these loops. But determining whether
   -- they are lists is more expensive than just doing the two loops here.
